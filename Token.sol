@@ -257,7 +257,7 @@ contract Ownable {
 
 contract MintableToken is StandardToken, Ownable {
     uint public totalSupply = 0;
-    address private minter;
+    address minter;
 
     modifier onlyMinter(){
         require(minter == msg.sender);
@@ -380,9 +380,13 @@ contract NYXToken is MintableToken, ERC23PayableToken {
         super.mint(_to, _amount);
     }
 
-    function NYXToken(address multisigOwner) {
-        //Transfer ownership on the token to multisig on creation
-        transferOwnership(multisigOwner);
+    function NYXToken(address team) {
+        //Transfer ownership on the token to team on creation
+        transferOwnership(team);
+        // minter is the TokenSale contract
+        minter = msg.sender; 
+        /// Preserve 3 000 000 tokens for the team
+        mint(team, 3000000);
     }
 
     /**

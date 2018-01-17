@@ -11,8 +11,17 @@ contract TokenSale is Ownable {
 
     uint private constant CAP = 15*millions;
     uint private constant SALE_CAP = 12*millions;
+    uint private constant SOFT_CAP = 2900000;
+    
+    // Allocated for the team upon contract creation
+    // =========
+    uint private constant TEAM_CAP = 3000000;
 
-    uint public price = 0.002 ether;
+    uint public price = 0.001 ether;
+    
+    // Hold investor's ether amounts to refund
+    address[] public contributors;
+    mapping(address => uint) public contributions;
 
     // Events
     // ======
@@ -35,11 +44,12 @@ contract TokenSale is Ownable {
     // Constructor
     // ===========
 
-    function TokenSale(address _token, address _multisig, address _authority, address _robot){
-        token = NYXToken(_token);
-        authority = _authority;
-        robot = _robot;
-        transferOwnership(_multisig);
+    function TokenSale(){
+        token = new NYXToken(msg.sender);
+
+        authority = msg.sender;
+        robot = msg.sender;
+        transferOwnership(msg.sender);
     }
 
     // Public functions
@@ -69,9 +79,15 @@ contract TokenSale is Ownable {
         uint amount = msg.value;
         uint tokens = getTokensAmountUnderCap(amount);
         
-        owner.transfer(amount);
+        // owner.transfer(amount);
 
 		token.mint(to, tokens);
+		
+		uint alreadyContributed = contributions[to];
+		if(alreadyContributed == 0) // new contributor
+		    contributors.push(to);
+		    
+		contributions[to] = contributions[to].add(msg.value);
 
         Buy(to, tokens);
     }
@@ -126,12 +142,27 @@ contract TokenSale is Ownable {
 
     // SALE state management: start / pause / finalize
     // --------------------------------------------
-    function open(bool open) onlyAuthority {
-        isOpen = open;
-        open ? RunSale() : PauseSale();
+    function open(bool opn) onlyAuthority {
+        isOpen = opn;
+        opn ? RunSale() : PauseSale();
     }
 
     function finalize() onlyAuthority {
+        // Check for SOFT_CAP
+        if(token.totalSupply() < SOFT_CAP + TEAM_CAP) { // Soft cap is not reached, return all contributions to investors
+            uint x = 0;
+            while(x < contributors.length) {
+                uint amountToReturn = contributions[contributors[x]];
+                contributions[contributors[x]] = 0;
+                contributors[x].transfer(amountToReturn);
+                token.transfer(owner, token.balanceOf(contributors[x]), "0");
+                x++;
+            }
+        } else { // Soft cap reached - transfer collected invesments to the team
+          owner.transfer(this.balance);  
+        }
+        
+        
         uint diff = CAP.sub(token.totalSupply());
         if(diff > 0) //The unsold capacity moves to team
             token.mint(owner, diff);
