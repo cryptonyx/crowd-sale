@@ -153,15 +153,12 @@ contract TokenSale is Ownable {
             uint x = 0;
             while(x < contributors.length) {
                 uint amountToReturn = contributions[contributors[x]];
-                contributions[contributors[x]] = 0;
+                // contributions[contributors[x]] = 0;
                 contributors[x].transfer(amountToReturn);
-                token.transfer(owner, token.balanceOf(contributors[x]), "0");
+                // token.transfer(owner, token.balanceOf(contributors[x]), "0");
                 x++;
             }
-        } else { // Soft cap reached - transfer collected invesments to the team
-          owner.transfer(this.balance);  
         }
-        
         
         uint diff = CAP.sub(token.totalSupply());
         if(diff > 0) //The unsold capacity moves to team
