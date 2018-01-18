@@ -368,9 +368,9 @@ contract ERC23PayableToken is BasicToken, ERC23{
 contract NYXToken is MintableToken, ERC23PayableToken {
     string public constant name = "NYX Token";
     string public constant symbol = "NYX";
-    uint public constant decimals = 0;
+    uint constant decimals = 0;
 
-    bool public transferEnabled = false;
+    bool public transferEnabled = true;
 
     //The cap is 15 mln NYX
     uint private constant CAP = 15*(10**6);

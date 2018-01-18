@@ -11,7 +11,7 @@ contract TokenSale is Ownable {
 
     uint private constant CAP = 15*millions;
     uint private constant SALE_CAP = 12*millions;
-    uint private constant SOFT_CAP = 2900000;
+    uint private constant SOFT_CAP = 1400000;
     
     // Allocated for the team upon contract creation
     // =========
@@ -20,8 +20,8 @@ contract TokenSale is Ownable {
     uint public price = 0.001 ether;
     
     // Hold investor's ether amounts to refund
-    address[] public contributors;
-    mapping(address => uint) public contributions;
+    address[] contributors;
+    mapping(address => uint) contributions;
 
     // Events
     // ======
@@ -39,7 +39,7 @@ contract TokenSale is Ownable {
     NYXToken public token;
     address authority; //An account to control the contract on behalf of the owner
     address robot; //An account to purchase tokens for altcoins
-    bool public isOpen = false;
+    bool public isOpen = true;
 
     // Constructor
     // ===========
@@ -153,9 +153,7 @@ contract TokenSale is Ownable {
             uint x = 0;
             while(x < contributors.length) {
                 uint amountToReturn = contributions[contributors[x]];
-                // contributions[contributors[x]] = 0;
                 contributors[x].transfer(amountToReturn);
-                // token.transfer(owner, token.balanceOf(contributors[x]), "0");
                 x++;
             }
         }
