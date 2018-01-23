@@ -35,7 +35,7 @@ contract TokenSale is Ownable {
 
     // State variables
     // ===============
-    bool public presale;
+    bool public presale = true;
     NYXToken public token;
     address authority; //An account to control the contract on behalf of the owner
     address robot; //An account to purchase tokens for altcoins
@@ -54,7 +54,7 @@ contract TokenSale is Ownable {
 
     // Public functions
     // ================
-    function togglePresale(bool activate) onlyOwner {
+    function togglePresale(bool activate) onlyAuthority {
         presale = activate;
     }
 
@@ -145,6 +145,13 @@ contract TokenSale is Ownable {
     function open(bool opn) onlyAuthority {
         isOpen = opn;
         opn ? RunSale() : PauseSale();
+    }
+    
+    function finalizePresale() onlyAuthority {
+        // Check for SOFT_CAP
+        require(token.totalSupply() > SOFT_CAP + TEAM_CAP);
+        // Transfer collected softcap to the team
+        owner.transfer(this.balance);
     }
 
     function finalize() onlyAuthority {
